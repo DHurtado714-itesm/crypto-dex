@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Input, Popover, Radio, Modal, message } from "antd";
-import { DownOutlined, SettingOutlined } from "@ant-design/icons";
+import {
+  ArrowDownOutlined,
+  DownOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
 import tokenList from "../tokenList.json";
 
 function Swap() {
@@ -16,6 +20,12 @@ function Swap() {
 
   function changeAmount(e) {
     setTokenOneAmount(e.target.value);
+  }
+
+  function switchTokens() {
+    const temp = tokenOne;
+    setTokenOne(tokenTwo);
+    setTokenTwo(temp);
   }
 
   const settings = (
@@ -46,6 +56,9 @@ function Swap() {
       <div className="inputs">
         <Input placeholder="0" value={tokenOneAmount} onChange={changeAmount} />
         <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
+        <div className="switchButton" onClick={switchTokens}>
+          <ArrowDownOutlined className="switchArrow" />
+        </div>
         <div className="assetOne">
           <img src={tokenOne.img} alt="assetOneLogo" className="assetLogo" />
           {tokenOne.ticker}
