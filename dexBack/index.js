@@ -5,6 +5,8 @@ const cors = require("cors");
 require("dotenv").config();
 const port = 3001;
 const axios = require("axios");
+const { parseUnits, formatUnits } = require("viem");
+const { sleep } = require("sleep");
 
 app.use(cors());
 app.use(express.json());
@@ -76,6 +78,52 @@ app.get("/approve/transaction", async (req, res) => {
     );
 
     return res.status(200).json(response.data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/swap", async (req, res) => {
+  const {
+    chainId,
+    fromTokenAddress,
+    decimals,
+    toTokenAddress,
+    amount,
+    fromAddress,
+    slippage,
+  } = req.query;
+
+  const cryptoAmount = parseUnits(amount, decimals);
+
+  try {
+    sleep(1); // Sleep for 1 second to allow for the transaction to be approved
+    console.log(req.query);
+    const { data } = await axios.get(
+      `https://api.1inch.dev/swap/v6.0/${chainId}/swap`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
+        },
+        params: {
+          src: fromTokenAddress,
+          dst: toTokenAddress,
+          amount: cryptoAmount.toString(),
+          from: fromAddress,
+          slippage: 1,
+          origin: fromAddress,
+        },
+      }
+    );
+
+    console.log(data);
+
+    return res.status(200).json({
+      toAmount: parseFloat(formatUnits(data.dstAmount, decimals)),
+      toAddress: data.tx.to,
+      data: data.tx.data
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
