@@ -7,8 +7,13 @@ import {
 } from "@ant-design/icons";
 import tokenList from "../tokenList.json";
 import axios from "axios";
+import { useSendTransaction, useWaitForTransaction } from "wagmi";
+import { ChainId } from "../constants";
+import BigNumber from "bignumber.js";
 
-function Swap() {
+function Swap(props) {
+  const { address, isConnected } = props;
+
   const [slippage, setSlippage] = useState(2.5);
   const [tokenOneAmount, setTokenOneAmount] = useState(null);
   const [tokenTwoAmount, setTokenTwoAmount] = useState(null);
@@ -17,6 +22,20 @@ function Swap() {
   const [isOpen, setIsOpen] = useState(false);
   const [changeToken, setChangeToken] = useState(1);
   const [prices, setPrices] = useState(null);
+  const [txDetails, setTxDetails] = useState({
+    to: null,
+    data: null,
+    value: null,
+  });
+
+  const { data, sendTransaction } = useSendTransaction({
+    request: {
+      from: address,
+      to: String(txDetails.to),
+      data: String(txDetails.data),
+      value: String(txDetails.value),
+    },
+  });
 
   function handleSlippage(e) {
     setSlippage(e.target.value);
@@ -70,15 +89,53 @@ function Swap() {
     setPrices(res.data);
   }
 
-  useEffect(() => {
-    fetchPrices(tokenList[0].address, tokenList[1].address);
-  }, []);
-
   function resetInputValues() {
     setPrices(null);
     setTokenOneAmount(null);
     setTokenTwoAmount(null);
   }
+
+  async function fetchDexSwap() {
+    const response = await axios.get(
+      `http://localhost:3001/approve/allowance?chainId=${ChainId.POLYGON}&tokenAddress=${tokenOne.address}&walletAddress=${address}`
+    );
+
+    if (response.data.allowance === "0") {
+      setTimeout(async () => {
+        const approve = await axios.get(
+          `http://localhost:3001/approve/transaction?chainId=${ChainId.POLYGON}&tokenAddress=${tokenOne.address}`
+        );
+
+        setTxDetails(approve.data);
+        console.log("not approved");
+      }, 1000);
+      return;
+    }
+
+    console.log("make swap");
+
+    console.log(tokenOne);
+    const txnResponse = await axios.get(
+      `http://localhost:3001/swap?chainId=${ChainId.POLYGON}&fromTokenAddress=${tokenOne.address}&decimals=${tokenOne.decimals}&toTokenAddress=${tokenTwo.address}&amount=${tokenOneAmount}&fromAddress=${address}&slippage=${slippage}`
+    );
+
+    setTokenTwoAmount(txnResponse.data.toAmount);
+    setTxDetails({
+      to: txnResponse.data.toAddress,
+      data: txnResponse.data.data,
+      value: txnResponse.data.toAmount,
+    });
+  }
+
+  useEffect(() => {
+    fetchPrices(tokenList[0].address, tokenList[1].address);
+  }, []);
+
+  useEffect(() => {
+    if (txDetails.to && isConnected) {
+      sendTransaction();
+    }
+  }, [txDetails]);
 
   const settings = (
     <>
@@ -153,7 +210,11 @@ function Swap() {
             <DownOutlined />
           </div>
         </div>
-        <div className="swapButton" disabled={!tokenOneAmount}>
+        <div
+          className="swapButton"
+          disabled={!tokenOneAmount || !isConnected}
+          onClick={fetchDexSwap}
+        >
           Swap
         </div>
       </div>
