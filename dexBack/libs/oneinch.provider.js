@@ -18,8 +18,6 @@ async function approveAllowance(params) {
       }
     );
 
-    console.log(response.data);
-
     return response.data.allowance;
   } catch (error) {
     console.error(error);
