@@ -262,7 +262,14 @@ function Swap({ address, isConnected }: ISwapProps) {
             <DownOutlined />
           </div>
         </div>
-        <div className="swapButton" onClick={fetchDexSwap}>
+        <div
+          className="swapButton"
+          onClick={isConnected ? fetchDexSwap : undefined}
+          style={{
+            cursor: isConnected ? "pointer" : "not-allowed",
+            opacity: isConnected ? 1 : 0.5,
+          }}
+        >
           Swap
         </div>
       </div>
