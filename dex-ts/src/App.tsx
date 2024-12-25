@@ -17,7 +17,10 @@ function App() {
       <Header connect={connect} isConnected={isConnected} address={address} />
       <div className="mainWindow">
         <Routes>
-          <Route path="/" element={<Swap address={address} />} />
+          <Route
+            path="/"
+            element={<Swap address={address} isConnected={isConnected} />}
+          />
           <Route path="/tokens" element={<Tokens />} />
         </Routes>
       </div>
