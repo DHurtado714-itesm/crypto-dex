@@ -39,7 +39,9 @@ app.get("/tokenPrice", async (req, res) => {
 });
 
 app.get("/token/list", async (_, res) => {
-  res.status(200).json({data: tokenList});
+  const tokenList = await OneInchProvider.getTokenList();
+
+  res.status(200).json({ data: tokenList });
 });
 
 app.get("/approve/allowance", async (req, res) => {

@@ -67,8 +67,55 @@ async function executeSwap(params) {
   }
 }
 
+let tokenListCache = null;
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+let lastCacheTime = null;
+
+async function getTokenList() {
+  try {
+    if (
+      tokenListCache &&
+      lastCacheTime &&
+      Date.now() - lastCacheTime < CACHE_DURATION
+    ) {
+      console.log("Returning cached token list");
+      return tokenListCache;
+    }
+
+    // If no cache or expired, fetch new data
+    console.log("Fetching fresh token list");
+    const response = await axios.get(
+      `https://api.1inch.dev/token/v1.2/${137}/token-list`,
+      {
+        headers,
+      }
+    );
+
+    const tokens = response.data.tokens.map((token) => ({
+      name: token.name,
+      ticker: token.symbol,
+      img: token.logoURI,
+      address: token.address,
+      decimals: token.decimals,
+    }));
+
+    tokenListCache = tokens;
+    lastCacheTime = Date.now();
+
+    return tokens;
+  } catch (error) {
+    console.error("Error fetching token list:", error);
+    if (tokenListCache) {
+      console.log("Returning cached token list due to error");
+      return tokenListCache;
+    }
+    throw error;
+  }
+}
+
 export const OneInchProvider = {
   approveAllowance,
   approveTransaction,
   executeSwap,
+  getTokenList,
 };
