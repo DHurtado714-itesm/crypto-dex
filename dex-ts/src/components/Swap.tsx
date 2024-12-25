@@ -26,6 +26,8 @@ function Swap({ address, isConnected }: ISwapProps) {
   const [tokenTwo, setTokenTwo] = useState<Token>(tokenList[1]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [changeToken, setChangeToken] = useState<number>(1);
+  const [shouldSendTransaction, setShouldSendTransaction] =
+    useState<boolean>(false);
   const [prices, setPrices] = useState({ tokenOne: 0, tokenTwo: 0, ratio: 0 });
   const [txDetails, setTxDetails] = useState({
     to: null,
@@ -131,6 +133,7 @@ function Swap({ address, isConnected }: ISwapProps) {
       gasLimit: txnResponse.data.gas,
       gasPrice: txnResponse.data.gasPrice,
     });
+    setShouldSendTransaction(true);
   }
 
   useEffect(() => {
@@ -144,10 +147,11 @@ function Swap({ address, isConnected }: ISwapProps) {
   }, [txDetails]);
 
   useEffect(() => {
-    if (txDetails.to && isConnected && sendTransaction) {
+    if (shouldSendTransaction && isConnected && sendTransaction) {
       sendTransaction();
+      setShouldSendTransaction(false);
     }
-  }, [txDetails]);
+  }, [shouldSendTransaction, isConnected, sendTransaction]);
 
   const settings = (
     <>
