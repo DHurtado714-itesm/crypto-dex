@@ -6,13 +6,21 @@ export async function getTokenPrices(one: string, two: string) {
     params: { addressOne: one, addressTwo: two },
   });
 
-  console.log(res.data);
-
   return res.data;
 }
 
 export async function getTokenList(): Promise<Token[]> {
-  const res = await axios.get("http://localhost:3001/token/list");
+  try {
+    const response = await axios.get("http://localhost:3001/token/list");
 
-  return res.data.data;
+    if (response.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else {
+      console.error("Unexpected data structure:", response.data);
+      return [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch tokens:", error);
+    return [];
+  }
 }
