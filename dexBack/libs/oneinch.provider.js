@@ -70,12 +70,14 @@ async function executeSwap(params) {
 let tokenListCache = null;
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 let lastCacheTime = null;
+let lastTokenChainId = null;
 
-async function getTokenList() {
+async function getTokenListByChainId(chainId) {
   try {
     if (
       tokenListCache &&
       lastCacheTime &&
+      lastTokenChainId === chainId &&
       Date.now() - lastCacheTime < CACHE_DURATION
     ) {
       console.log("Returning cached token list");
@@ -84,23 +86,23 @@ async function getTokenList() {
 
     // If no cache or expired, fetch new data
     console.log("Fetching fresh token list");
-    const response = await axios.get(
-      `https://api.1inch.dev/token/v1.2/${137}/token-list`,
-      {
-        headers,
-      }
-    );
+    const response = await axios.get(`${oneInchApiBaseUrl}/${chainId}/tokens`, {
+      headers,
+    });
 
-    const tokens = response.data.tokens.map((token) => ({
-      name: token.name,
-      ticker: token.symbol,
-      img: token.logoURI,
-      address: token.address,
-      decimals: token.decimals,
-    }));
+    const tokens = Object.entries(response.data.tokens).map(
+      ([address, token]) => ({
+        name: token.name,
+        ticker: token.symbol,
+        img: token.logoURI,
+        address: token.address,
+        decimals: token.decimals,
+      })
+    );
 
     tokenListCache = tokens;
     lastCacheTime = Date.now();
+    lastTokenChainId = chainId;
 
     return tokens;
   } catch (error) {
@@ -109,7 +111,6 @@ async function getTokenList() {
       console.log("Returning cached token list due to error");
       return tokenListCache;
     }
-    throw error;
   }
 }
 
@@ -117,5 +118,5 @@ export const OneInchProvider = {
   approveAllowance,
   approveTransaction,
   executeSwap,
-  getTokenList,
+  getTokenListByChainId,
 };
