@@ -6,6 +6,7 @@ import { configureChains, createClient, WagmiConfig } from "wagmi";
 import { polygon } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import { BrowserRouter } from "react-router-dom";
+import { TokenProvider } from "./context/TokenContext.tsx";
 
 const { provider, webSocketProvider } = configureChains(
   [polygon],
@@ -22,7 +23,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <WagmiConfig client={client}>
       <BrowserRouter>
-        <App />
+        <TokenProvider>
+          <App />
+        </TokenProvider>
       </BrowserRouter>
     </WagmiConfig>
   </StrictMode>
