@@ -9,7 +9,6 @@ import tokenList from "../tokenList.json";
 import axios from "axios";
 import { useSendTransaction, useWaitForTransaction } from "wagmi";
 import { ChainId } from "../constants";
-import BigNumber from "bignumber.js";
 
 function Swap(props) {
   const { address, isConnected } = props;
@@ -26,6 +25,8 @@ function Swap(props) {
     to: null,
     data: null,
     value: null,
+    gasLimit: null,
+    gasPrice: null,
   });
 
   const { data, sendTransaction } = useSendTransaction({
@@ -34,6 +35,7 @@ function Swap(props) {
       to: String(txDetails.to),
       data: String(txDetails.data),
       value: String(txDetails.value),
+      gasLimit: String(txDetails.gasLimit),
     },
   });
 
@@ -112,9 +114,6 @@ function Swap(props) {
       return;
     }
 
-    console.log("make swap");
-
-    console.log(tokenOne);
     const txnResponse = await axios.get(
       `http://localhost:3001/swap?chainId=${ChainId.POLYGON}&fromTokenAddress=${tokenOne.address}&decimals=${tokenOne.decimals}&toTokenAddress=${tokenTwo.address}&amount=${tokenOneAmount}&fromAddress=${address}&slippage=${slippage}`
     );
@@ -123,7 +122,9 @@ function Swap(props) {
     setTxDetails({
       to: txnResponse.data.toAddress,
       data: txnResponse.data.data,
-      value: txnResponse.data.toAmount,
+      value: txnResponse.data.value,
+      gasLimit: txnResponse.data.gas,
+      gasPrice: txnResponse.data.gasPrice,
     });
   }
 
