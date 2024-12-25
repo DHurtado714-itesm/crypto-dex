@@ -7,6 +7,7 @@ const port = 3001;
 const { parseUnits, formatUnits } = require("viem");
 const { sleep } = require("sleep");
 const { OneInchProvider } = require("./libs/oneinch.provider");
+const tokenList = require("./libs/tokenList.json");
 
 app.use(cors());
 app.use(express.json());
@@ -37,6 +38,10 @@ app.get("/tokenPrice", async (req, res) => {
   }
 });
 
+app.get("/token/list", async (_, res) => {
+  res.status(200).json({data: tokenList});
+});
+
 app.get("/approve/allowance", async (req, res) => {
   const { chainId, walletAddress, tokenAddress } = req.query;
 
@@ -49,7 +54,7 @@ app.get("/approve/allowance", async (req, res) => {
 
     return res.status(200).json({ allowance: response });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
