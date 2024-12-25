@@ -12,6 +12,7 @@ import { ChainId } from "../constants";
 import { Token } from "../models/Token";
 import { useSendTransaction, useWaitForTransaction } from "wagmi";
 import { Hex } from "viem";
+import { useTokenContext } from "../hooks/useTokenContext";
 
 interface ISwapProps {
   isConnected: boolean;
@@ -19,13 +20,18 @@ interface ISwapProps {
 }
 
 function Swap({ address, isConnected }: ISwapProps) {
+  const { tokens } = useTokenContext();
   const [messageApi, contextHolder] = message.useMessage();
 
   const [slippage, setSlippage] = useState<number>(2.5);
   const [tokenOneAmount, setTokenOneAmount] = useState<string | null>(null);
   const [tokenTwoAmount, setTokenTwoAmount] = useState<string | null>(null);
-  const [tokenOne, setTokenOne] = useState<Token>(tokenList[0]);
-  const [tokenTwo, setTokenTwo] = useState<Token>(tokenList[1]);
+  const [tokenOne, setTokenOne] = useState<Token>(
+    tokens && tokens.length > 0 ? tokens[0] : tokenList[0]
+  );
+  const [tokenTwo, setTokenTwo] = useState<Token>(
+    tokens && tokens.length > 1 ? tokens[1] : tokenList[1]
+  );
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [changeToken, setChangeToken] = useState<number>(1);
   const [shouldSendTransaction, setShouldSendTransaction] =
@@ -122,7 +128,6 @@ function Swap({ address, isConnected }: ISwapProps) {
         );
 
         setTxDetails(approve.data);
-        console.log("not approved");
       }, 1000);
       return;
     }
@@ -143,14 +148,10 @@ function Swap({ address, isConnected }: ISwapProps) {
   }
 
   useEffect(() => {
-    fetchPrices(tokenList[0].address, tokenList[1].address);
-  }, []);
-
-  useEffect(() => {
-    if (txDetails.to) {
-      console.log(txDetails);
+    if (tokens && tokens.length >= 2) {
+      fetchPrices(tokens[0].address, tokens[1].address);
     }
-  }, [txDetails]);
+  }, [tokens]);
 
   useEffect(() => {
     if (shouldSendTransaction && isConnected && sendTransaction) {
