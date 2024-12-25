@@ -32,13 +32,13 @@ export const TokenProvider = ({ children }: ITokenProviderProps) => {
     handleGetTokens();
   }, [handleGetTokens]);
 
-  useEffect(() => {
-    console.log("Tokens updated in state:", tokens);
-  }, [tokens]);
-
   return (
     <TokenContext.Provider
-      value={{ tokens, tokenLoading, reloadTokens: handleGetTokens }}
+      value={{
+        tokens,
+        isTokenLoading: tokenLoading,
+        reloadTokens: handleGetTokens,
+      }}
     >
       {tokenLoading ? <div>Loading...</div> : children}
     </TokenContext.Provider>

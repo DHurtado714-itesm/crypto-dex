@@ -2,7 +2,7 @@ import axios from "axios";
 import { Token } from "../models/Token";
 
 export async function getTokenPrices(one: string, two: string) {
-  const res = await axios.get("http://localhost:3001/tokenPrice", {
+  const res = await axios.get("http://localhost:3001/token/price", {
     params: { addressOne: one, addressTwo: two },
   });
 

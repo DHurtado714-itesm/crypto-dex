@@ -3,7 +3,7 @@ import { Token } from "../models/Token";
 
 export interface ITokenContext {
   tokens: Token[];
-  tokenLoading: boolean;
+  isTokenLoading: boolean;
   reloadTokens: () => void;
 }
 
