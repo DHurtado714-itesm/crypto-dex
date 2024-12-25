@@ -319,3 +319,33 @@ header {
   flex-direction: column;
   padding: 30px;
 }
+
+.tableWrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.tokenTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tokenTable thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--card-bg-color);
+  z-index: 1;
+}
+
+.tokenTable th,
+.tokenTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--card-border-color);
+}
+
+.tokenTable tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
