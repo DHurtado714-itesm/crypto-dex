@@ -1,50 +1,73 @@
-# React + TypeScript + Vite
+# Dex Starter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a decentralized exchange (DEX) starter kit using Moralis and 1inch.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Moralis Integration**: Easily connect to the blockchain and manage user authentication.
+- **1inch Integration**: Access to the 1inch API for token swaps and price data.
+- **React**: Built with React for a modern and responsive UI.
+- **TypeScript**: Written in TypeScript for type safety and better developer experience.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Prerequisites
 
-- Configure the top-level `parserOptions` property like this:
+- Node.js
+- pnpm
+- Moralis account
+- 1inch API key
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Running the App
+
+Start the development server:
+
+```sh
+pnpm start
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Usage
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+- **Authentication**: Users can log in using their crypto wallets.
+- **Token Swaps**: Perform token swaps using the 1inch API.
+- **Price Data**: Fetch and display token price data.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License.
+
+## Contact
+
+For any questions or support, please open an issue or contact the maintainer.
+
+## Architecture
+
+This project consists of a React frontend built with Vite and a backend where the transactions are formed.
+
+### Frontend
+
+- **React**: The frontend is built using React for a modern and responsive user interface.
+- **Vite**: Vite is used as the build tool for faster development and optimized production builds.
+
+### Backend
+
+- **Transaction Formation**: The backend handles the formation of transactions, interacting with the blockchain and the 1inch API.
+
+## Folder Structure
+
+- `src/`: Contains the React frontend code.
+- `public/`: Static assets.
+
+## Running the Backend
+
+To start the backend server, navigate to the `backend` directory and run:
+
+```sh
+pnpm start
 ```
