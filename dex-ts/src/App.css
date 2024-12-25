@@ -80,7 +80,7 @@ header {
 }
 
 .tradeBox {
-  width: 400px;
+  width: 40%;
   background-color: #0e111b;
   border: 2px solid #21273a;
   min-height: 300px;
@@ -263,4 +263,59 @@ header {
   font-size: 13px;
   font-weight: 300;
   color: #51596f;
+}
+
+.tokenTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.tokenTable th {
+  padding: 8px;
+  text-align: left;
+  color: #5f6783;
+}
+
+.tokenTable tr {
+  background-color: #1f2639;
+  border-radius: 12px;
+  transition: 0.3s;
+  text-align: left;
+}
+
+.tokenTable tr:hover {
+  background-color: #2c3b5a;
+}
+
+.tokenTable td {
+  padding: 12px 8px;
+}
+
+.tokenTable td.muted {
+  color: #5f6783;
+}
+
+.tokenTable td.address {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tokenIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.tokenBox {
+  width: 900px;
+  background-color: #0e111b;
+  border: 2px solid #21273a;
+  min-height: 300px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
 }
