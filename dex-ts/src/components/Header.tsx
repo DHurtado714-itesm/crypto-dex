@@ -1,5 +1,5 @@
-import Logo from "../assets/moralis-logo.svg";
-import Eth from "../assets/eth.svg";
+import Logo from "../assets/logo.svg";
+import Polygon from "../assets/polygon.svg";
 import { Link } from "react-router-dom";
 
 interface IHeaderProps {
@@ -22,8 +22,8 @@ function Header({ connect, isConnected, address }: IHeaderProps) {
       </div>
       <div className="rightH">
         <div className="headerItem">
-          <img src={Eth} alt="eth" className="eth" />
-          Ethereum
+          <img src={Polygon} alt="eth" className="eth" />
+          Polygon
         </div>
         <div className="connectButton" onClick={connect}>
           {isConnected && address
