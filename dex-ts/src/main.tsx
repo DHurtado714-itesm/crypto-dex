@@ -6,7 +6,7 @@ import { configureChains, createClient, WagmiConfig } from "wagmi";
 import { polygon } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import { BrowserRouter } from "react-router-dom";
-import { TokenProvider } from "./context/TokenContext.tsx";
+import { TokenProvider } from "./provider/TokenProvider.tsx";
 
 const { provider, webSocketProvider } = configureChains(
   [polygon],
