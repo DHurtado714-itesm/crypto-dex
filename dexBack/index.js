@@ -7,29 +7,24 @@ const port = 3001;
 const { parseUnits, formatUnits } = require("viem");
 const { sleep } = require("sleep");
 const { OneInchProvider } = require("./libs/oneinch.provider");
-const tokenList = require("./libs/tokenList.json");
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/tokenPrice", async (req, res) => {
+app.get("/token/price", async (req, res) => {
   try {
-    const { query } = req;
+    const { addressOne, addressTwo } = req.query;
 
-    const responseOne = await Moralis.EvmApi.token.getTokenPrice({
-      chain: "0x89",
-      address: query.addressOne,
-    });
-
-    const responseTwo = await Moralis.EvmApi.token.getTokenPrice({
-      chain: "0x89",
-      address: query.addressTwo,
+    const response = await OneInchProvider.getTokensPricesByAddress({
+      chainId: 137,
+      addressOne,
+      addressTwo,
     });
 
     const usdPrices = {
-      tokenOne: responseOne.raw.usdPrice,
-      tokenTwo: responseTwo.raw.usdPrice,
-      ratio: responseOne.raw.usdPrice / responseTwo.raw.usdPrice,
+      tokenOne: response.tokenOne,
+      tokenTwo: response.tokenTwo,
+      ratio: response.ratio,
     };
 
     return res.status(200).json(usdPrices);
@@ -39,7 +34,7 @@ app.get("/tokenPrice", async (req, res) => {
 });
 
 app.get("/token/list", async (_, res) => {
-  const tokenList = await OneInchProvider.getTokenList();
+  const tokenList = await OneInchProvider.getTokenListByChainId(137);
 
   res.status(200).json({ data: tokenList });
 });
