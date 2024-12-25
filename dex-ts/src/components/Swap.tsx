@@ -102,19 +102,6 @@ function Swap({ address, isConnected }: ISwapProps) {
     setPrices(response);
   }
 
-  const settings = (
-    <>
-      <div>Slippage Tolerance</div>
-      <div>
-        <Radio.Group value={slippage} onChange={handleSlippage}>
-          <Radio.Button value={0.5}>0.5%</Radio.Button>
-          <Radio.Button value={2.5}>2.5%</Radio.Button>
-          <Radio.Button value={5}>5.0%</Radio.Button>
-        </Radio.Group>
-      </div>
-    </>
-  );
-
   async function fetchDexSwap() {
     const response = await axios.get(
       `http://localhost:3001/approve/allowance?chainId=${ChainId.POLYGON}&tokenAddress=${tokenOne.address}&walletAddress=${address}`
@@ -161,6 +148,19 @@ function Swap({ address, isConnected }: ISwapProps) {
       sendTransaction();
     }
   }, [txDetails]);
+
+  const settings = (
+    <>
+      <div>Slippage Tolerance</div>
+      <div>
+        <Radio.Group value={slippage} onChange={handleSlippage}>
+          <Radio.Button value={0.5}>0.5%</Radio.Button>
+          <Radio.Button value={2.5}>2.5%</Radio.Button>
+          <Radio.Button value={5}>5.0%</Radio.Button>
+        </Radio.Group>
+      </div>
+    </>
+  );
 
   return (
     <>
@@ -221,10 +221,7 @@ function Swap({ address, isConnected }: ISwapProps) {
             <DownOutlined />
           </div>
         </div>
-        <div
-          className="swapButton"
-          onClick={fetchDexSwap}
-        >
+        <div className="swapButton" onClick={fetchDexSwap}>
           Swap
         </div>
       </div>
