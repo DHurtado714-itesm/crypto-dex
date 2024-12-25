@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import tokenList from "../tokenList.json";
-import { Input, Popover, Radio, Modal, RadioChangeEvent } from "antd";
+import { Input, Popover, Radio, Modal, RadioChangeEvent, message } from "antd";
 import {
   ArrowDownOutlined,
   DownOutlined,
@@ -10,7 +10,7 @@ import { getTokenPrices } from "../services/tokens";
 import axios from "axios";
 import { ChainId } from "../constants";
 import { Token } from "../models/Token";
-import { useSendTransaction } from "wagmi";
+import { useSendTransaction, useWaitForTransaction } from "wagmi";
 import { Hex } from "viem";
 
 interface ISwapProps {
@@ -19,6 +19,8 @@ interface ISwapProps {
 }
 
 function Swap({ address, isConnected }: ISwapProps) {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [slippage, setSlippage] = useState<number>(2.5);
   const [tokenOneAmount, setTokenOneAmount] = useState<string | null>(null);
   const [tokenTwoAmount, setTokenTwoAmount] = useState<string | null>(null);
@@ -37,7 +39,7 @@ function Swap({ address, isConnected }: ISwapProps) {
     gasPrice: null,
   });
 
-  const { sendTransaction } = useSendTransaction({
+  const { data, sendTransaction } = useSendTransaction({
     mode: "prepared",
     request: {
       from: address,
@@ -46,6 +48,10 @@ function Swap({ address, isConnected }: ISwapProps) {
       value: String(txDetails.value),
       gasLimit: String(txDetails.gasLimit),
     },
+  });
+
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
   });
 
   function handleSlippage(e: RadioChangeEvent) {
@@ -153,6 +159,36 @@ function Swap({ address, isConnected }: ISwapProps) {
     }
   }, [shouldSendTransaction, isConnected, sendTransaction]);
 
+  useEffect(() => {
+    messageApi.destroy();
+
+    if (isLoading) {
+      messageApi.open({
+        type: "loading",
+        content: "Transaction is being processed...",
+        duration: 0,
+      });
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    messageApi.destroy();
+
+    if (isSuccess) {
+      messageApi.open({
+        type: "success",
+        content: "Transaction successful!",
+        duration: 1.5,
+      });
+    } else if (txDetails.to) {
+      messageApi.open({
+        type: "error",
+        content: "Transaction failed!",
+        duration: 1.5,
+      });
+    }
+  }, [isSuccess]);
+
   const settings = (
     <>
       <div>Slippage Tolerance</div>
@@ -168,6 +204,7 @@ function Swap({ address, isConnected }: ISwapProps) {
 
   return (
     <>
+      {contextHolder}
       <Modal
         open={isOpen}
         footer={null}
