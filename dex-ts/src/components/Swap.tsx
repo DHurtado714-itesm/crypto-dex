@@ -88,16 +88,19 @@ function Swap({ address, isConnected }: ISwapProps) {
     setIsOpen(true);
   }
 
-  function modifyToken(i: number) {
-    if (!tokenOne || !tokenTwo) return;
+  function modifyToken(ticker: string) {
+    if (!tokenOne || !tokenTwo || !tokens) return;
     resetInputValues();
 
+    const selectedToken = tokens.find((t) => t.ticker === ticker);
+    if (!selectedToken) return;
+
     if (changeToken === 1) {
-      setTokenOne(tokens[i]);
-      fetchPrices(tokens[i].address, tokenTwo.address);
+      setTokenOne(selectedToken);
+      fetchPrices(selectedToken.address, tokenTwo.address);
     } else {
-      setTokenTwo(tokens[i]);
-      fetchPrices(tokenOne.address, tokens[i].address);
+      setTokenTwo(selectedToken);
+      fetchPrices(tokenOne.address, selectedToken.address);
     }
 
     setIsOpen(false);
@@ -151,9 +154,13 @@ function Swap({ address, isConnected }: ISwapProps) {
 
   useEffect(() => {
     if (!isTokenLoading && tokens && tokens.length >= 2) {
-      setTokenOne(tokens[0]);
-      setTokenTwo(tokens[1]);
-      fetchPrices(tokens[0].address, tokens[1].address);
+      const usdcToken = tokens.find((t) => t.ticker === "USDC");
+      const wethToken = tokens.find((t) => t.ticker === "WETH");
+      if (usdcToken && wethToken) {
+        setTokenOne(usdcToken);
+        setTokenTwo(wethToken);
+        fetchPrices(usdcToken.address, wethToken.address);
+      }
     }
   }, [isTokenLoading, tokens]);
 
@@ -249,12 +256,12 @@ function Swap({ address, isConnected }: ISwapProps) {
         }
       >
         <div className="modalContent">
-          {filteredTokens?.map((e: Token, i: number) => {
+          {filteredTokens?.map((e: Token) => {
             return (
               <div
                 className="tokenChoice"
-                key={i}
-                onClick={() => modifyToken(i)}
+                key={e.address}
+                onClick={() => modifyToken(e.ticker)}
               >
                 <img src={e.img} alt={e.ticker} className="tokenLogo" />
                 <div className="tokenChoiceNames">
