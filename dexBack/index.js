@@ -4,9 +4,9 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const port = 3001;
-const axios = require("axios");
 const { parseUnits, formatUnits } = require("viem");
 const { sleep } = require("sleep");
+const { OneInchProvider } = require("./libs/oneinch.provider");
 
 app.use(cors());
 app.use(express.json());
@@ -41,23 +41,15 @@ app.get("/approve/allowance", async (req, res) => {
   const { chainId, walletAddress, tokenAddress } = req.query;
 
   try {
-    const response = await axios.get(
-      `https://api.1inch.dev/swap/v6.0/${chainId}/approve/allowance`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
-        },
-        params: {
-          tokenAddress: tokenAddress,
-          walletAddress: walletAddress,
-        },
-      }
-    );
+    const response = await OneInchProvider.approveAllowance({
+      chainId,
+      walletAddress,
+      tokenAddress,
+    });
 
-    return res.status(200).json({ allowance: response.data.allowance });
+    return res.status(200).json({ allowance: response });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -65,19 +57,12 @@ app.get("/approve/transaction", async (req, res) => {
   const { chainId, tokenAddress } = req.query;
 
   try {
-    const response = await axios.get(
-      `https://api.1inch.dev/swap/v6.0/${chainId}/approve/transaction`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
-        },
-        params: {
-          tokenAddress: tokenAddress,
-        },
-      }
-    );
+    const response = await OneInchProvider.approveTransaction({
+      chainId,
+      tokenAddress,
+    });
 
-    return res.status(200).json(response.data);
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -99,30 +84,26 @@ app.get("/swap", async (req, res) => {
 
   try {
     sleep(1); // Sleep for 1 second to allow for the transaction to be approved
-    console.log(req.query);
-    const { data } = await axios.get(
-      `https://api.1inch.dev/swap/v6.0/${chainId}/swap`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
-        },
-        params: {
-          src: fromTokenAddress,
-          dst: toTokenAddress,
-          amount: cryptoAmount.toString(),
-          from: fromAddress,
-          slippage: 1,
-          origin: fromAddress,
-        },
-      }
-    );
+
+    const data = await OneInchProvider.executeSwap({
+      chainId,
+      fromTokenAddress,
+      toTokenAddress,
+      amount: cryptoAmount,
+      fromAddress,
+      slippage,
+    });
 
     console.log(data);
 
     return res.status(200).json({
       toAmount: parseFloat(formatUnits(data.dstAmount, decimals)),
+      toAmountInWei: data.dstAmount,
       toAddress: data.tx.to,
-      data: data.tx.data
+      data: data.tx.data,
+      gas: data.tx.gas,
+      gasPrice: data.tx.gasPrice,
+      value: data.tx.value,
     });
   } catch (error) {
     console.error(error);
