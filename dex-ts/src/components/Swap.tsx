@@ -1,5 +1,4 @@
 import { useState, ChangeEvent, useEffect } from "react";
-import tokenList from "../tokenList.json";
 import { Input, Popover, Radio, Modal, RadioChangeEvent, message } from "antd";
 import {
   ArrowDownOutlined,
@@ -13,6 +12,7 @@ import { Token } from "../models/Token";
 import { useSendTransaction, useWaitForTransaction } from "wagmi";
 import { Hex } from "viem";
 import { useTokenContext } from "../hooks/useTokenContext";
+import SearchBar from "./common/SearchBar";
 
 interface ISwapProps {
   isConnected: boolean;
@@ -20,18 +20,15 @@ interface ISwapProps {
 }
 
 function Swap({ address, isConnected }: ISwapProps) {
-  const { tokens } = useTokenContext();
+  const { tokens, isTokenLoading } = useTokenContext();
   const [messageApi, contextHolder] = message.useMessage();
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [slippage, setSlippage] = useState<number>(2.5);
   const [tokenOneAmount, setTokenOneAmount] = useState<string | null>(null);
   const [tokenTwoAmount, setTokenTwoAmount] = useState<string | null>(null);
-  const [tokenOne, setTokenOne] = useState<Token>(
-    tokens && tokens.length > 0 ? tokens[0] : tokenList[0]
-  );
-  const [tokenTwo, setTokenTwo] = useState<Token>(
-    tokens && tokens.length > 1 ? tokens[1] : tokenList[1]
-  );
+  const [tokenOne, setTokenOne] = useState<Token | null>(null);
+  const [tokenTwo, setTokenTwo] = useState<Token | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [changeToken, setChangeToken] = useState<number>(1);
   const [shouldSendTransaction, setShouldSendTransaction] =
@@ -75,6 +72,7 @@ function Swap({ address, isConnected }: ISwapProps) {
   }
 
   function switchTokens() {
+    if (!tokenOne || !tokenTwo) return;
     resetInputValues();
 
     const one = tokenOne;
@@ -91,14 +89,15 @@ function Swap({ address, isConnected }: ISwapProps) {
   }
 
   function modifyToken(i: number) {
+    if (!tokenOne || !tokenTwo) return;
     resetInputValues();
 
     if (changeToken === 1) {
-      setTokenOne(tokenList[i]);
-      fetchPrices(tokenList[i].address, tokenTwo.address);
+      setTokenOne(tokens[i]);
+      fetchPrices(tokens[i].address, tokenTwo.address);
     } else {
-      setTokenTwo(tokenList[i]);
-      fetchPrices(tokenOne.address, tokenList[i].address);
+      setTokenTwo(tokens[i]);
+      fetchPrices(tokenOne.address, tokens[i].address);
     }
 
     setIsOpen(false);
@@ -111,12 +110,15 @@ function Swap({ address, isConnected }: ISwapProps) {
   }
 
   async function fetchPrices(one: string, two: string) {
-    const response = await getTokenPrices(one, two);
-
-    setPrices(response);
+    setTimeout(async () => {
+      const response = await getTokenPrices(one, two);
+      setPrices(response);
+    }, 3000);
   }
 
   async function fetchDexSwap() {
+    if (!tokenOne || !tokenTwo || !address) return;
+
     const response = await axios.get(
       `http://localhost:3001/approve/allowance?chainId=${ChainId.POLYGON}&tokenAddress=${tokenOne.address}&walletAddress=${address}`
     );
@@ -148,10 +150,12 @@ function Swap({ address, isConnected }: ISwapProps) {
   }
 
   useEffect(() => {
-    if (tokens && tokens.length >= 2) {
+    if (!isTokenLoading && tokens && tokens.length >= 2) {
+      setTokenOne(tokens[0]);
+      setTokenTwo(tokens[1]);
       fetchPrices(tokens[0].address, tokens[1].address);
     }
-  }, [tokens]);
+  }, [isTokenLoading, tokens]);
 
   useEffect(() => {
     if (shouldSendTransaction && isConnected && sendTransaction) {
@@ -203,6 +207,32 @@ function Swap({ address, isConnected }: ISwapProps) {
     </>
   );
 
+  const filteredTokens = tokens?.filter(
+    (token) =>
+      token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      token.ticker.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (isTokenLoading) {
+    return (
+      <div className="tradeBox">
+        <div className="tradeBoxHeader">
+          <h4>Loading tokens...</h4>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tokenOne || !tokenTwo) {
+    return (
+      <div className="tradeBox">
+        <div className="tradeBoxHeader">
+          <h4>No tokens available</h4>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {contextHolder}
@@ -210,10 +240,16 @@ function Swap({ address, isConnected }: ISwapProps) {
         open={isOpen}
         footer={null}
         onCancel={() => setIsOpen(false)}
-        title="Select a token"
+        title={
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search by name or symbol..."
+          />
+        }
       >
         <div className="modalContent">
-          {tokenList?.map((e: Token, i: number) => {
+          {filteredTokens?.map((e: Token, i: number) => {
             return (
               <div
                 className="tokenChoice"
