@@ -5,8 +5,26 @@ const headers = {
   Authorization: `Bearer ${process.env.ONEINCH_API_KEY}`,
 };
 
+// Rate limiting variables
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 2000; // 1 second in milliseconds
+
+// Helper function to handle rate limiting
+async function rateLimitRequest() {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    const delay = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  lastRequestTime = Date.now();
+}
+
 async function approveAllowance(params) {
   try {
+    await rateLimitRequest();
     const response = await axios.get(
       `${oneInchApiBaseUrl}/${params.chainId}/approve/allowance`,
       {
@@ -27,6 +45,7 @@ async function approveAllowance(params) {
 
 async function approveTransaction(params) {
   try {
+    await rateLimitRequest();
     const response = await axios.get(
       `${oneInchApiBaseUrl}/${params.chainId}/approve/transaction`,
       {
@@ -46,6 +65,7 @@ async function approveTransaction(params) {
 
 async function executeSwap(params) {
   try {
+    await rateLimitRequest();
     const response = await axios.get(
       `${oneInchApiBaseUrl}/${params.chainId}/swap`,
       {
@@ -86,6 +106,7 @@ async function getTokenListByChainId(chainId) {
 
     // If no cache or expired, fetch new data
     console.log("Fetching fresh token list");
+    await rateLimitRequest();
     const response = await axios.get(`${oneInchApiBaseUrl}/${chainId}/tokens`, {
       headers,
     });
@@ -114,9 +135,38 @@ async function getTokenListByChainId(chainId) {
   }
 }
 
+async function getTokensPricesByAddress(params) {
+  try {
+    await rateLimitRequest();
+    const url = `https://api.1inch.dev/price/v1.1/${params.chainId}`;
+
+    const config = {
+      headers,
+    };
+
+    const body = {
+      tokens: [params.addressOne, params.addressTwo],
+      currency: "USD",
+    };
+
+    const response = await axios.post(url, body, config);
+
+    return {
+      tokenOne: response.data[params.addressOne],
+      tokenTwo: response.data[params.addressTwo],
+      ratio:
+        response.data[params.addressOne] / response.data[params.addressTwo],
+    };
+  } catch (error) {
+    console.error(error);
+    return "Internal Server Error";
+  }
+}
+
 export const OneInchProvider = {
   approveAllowance,
   approveTransaction,
   executeSwap,
   getTokenListByChainId,
+  getTokensPricesByAddress,
 };
